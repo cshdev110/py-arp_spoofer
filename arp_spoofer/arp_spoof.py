@@ -67,9 +67,8 @@ except KeyboardInterrupt:
     if not ip_forward_flag:
         ipv4 = subprocess.run(["sysctl", "-w", "net.ipv4.ip_forward=0"], capture_output=True)
         print(ipv4.stdout.decode().replace("net.ipv4.", "Returning ipv4 "))
-except Exception:
-    restore(target_ip, target_MAC, gateway_ip, spoof_mac)
-    restore(gateway_ip, spoof_mac, target_ip, target_MAC)
+except BaseException as be:
+    print("\r[-] " + be.__str__() + " error has come up ... quiting", end='\n\n')
     if not ip_forward_flag:
         ipv4 = subprocess.run(["sysctl", "-w", "net.ipv4.ip_forward=0"], capture_output=True)
         print(ipv4.stdout.decode().replace("net.ipv4.", "Returning ipv4 "))
