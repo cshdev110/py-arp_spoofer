@@ -46,6 +46,7 @@ gateway_ip = parser.parse_args().spoof_ip
 spoof_mac = parser.parse_args().spoof_mac
 
 
+sent_packets_count = 0
 try:
     while True:
         try:
